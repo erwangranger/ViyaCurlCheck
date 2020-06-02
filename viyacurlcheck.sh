@@ -28,7 +28,7 @@ function usage() {
         ## one or more Viya urls to check
         ## use space as a separator and surround by quotes
         ## for info on how to get a complete list of URLs for Viya 3.X, consult
-        ## <placeholder>
+        ## https://github.com/erwangranger/ViyaCurlCheck#viya-3x
 
   (---optional---)
 
@@ -167,7 +167,11 @@ check_urls () {
         exit 1
     fi
 
-    echo -e "Using curl to check the following urls: (-u \"${URL_LIST}\")"
+    echo -e "Using curl to check the urls provided: (-u \"${URL_LIST}\")"
+
+    if [[ "$OUTPUT_TYPE" == "none" ]]; then
+        echo -e "each dot is a check:"
+    fi
 
     local SUCC_RATE=0
     local RETRIES=0
@@ -218,6 +222,12 @@ check_urls () {
             URL=${url%$'\r'}
             URL_HTTP_CODE=$(curl -k -s -o /dev/null -w '%{http_code}' $URL  | tr -d '[:space:]' )
 
+            if [[ "$OUTPUT_TYPE" == "none" ]]; then
+                printf '.'
+                ## newline every tenth test
+                (( $URL_COUNTER % 10 == 0)) && printf '\n'
+            fi
+
             if [[ "$URL_HTTP_CODE" =~ ^(200)$ ]]; then
                 URL_PASS_FAIL="Success"
                 COUNT_SUCC=$[$COUNT_SUCC +1]
@@ -240,7 +250,7 @@ check_urls () {
         #SUCC_RATE=$(echo "scale=2 ; $COUNT_SUCC / $URL_COUNTER * 100" | bc | awk '{print int($1+0.5)}' )
         SUCC_RATE=$(( (${COUNT_SUCC} * 100) / ${URL_COUNTER} ))
 
-
+        echo
         echo -e "Number of URLs checked: $URL_COUNTER "
         echo -e "Number of URLs working: $COUNT_SUCC "
         echo -e "Number of URLs failing: $COUNT_FAIL"

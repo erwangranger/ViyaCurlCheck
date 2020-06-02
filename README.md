@@ -103,12 +103,16 @@ Choose one:
 
 ### Viya 3.X
 
-1. If you are using Viya 3.5, place yourself in the playbook folder and execute this command:
+1. If you are using Viya 3.X, place yourself in the playbook folder and execute this command:
 
     ```bash
+
     ## capture the list of URLs
-    MY_URLS=$(ansible httpproxy -m shell -a 'grep ProxyPass /etc/httpd/conf.d/proxy.conf | sort -u \
-                          | awk  "{print \"https://$(hostname -f)\" \$2 }" | tr "\n\r" " " ' \
+    MY_URLS=$(ansible httpproxy -m shell -a 'grep ProxyPass /etc/httpd/conf.d/proxy.conf  \
+                          | grep -Ev "cas-shared-default-http|jobDefinitions|dagentsrv-shared" \
+                          | awk  "{print \"https://$(hostname -f)\" \$2 }" \
+                          | sort -u \
+                          | tr "\n\r" " " ' \
                           | grep -v CHANGED)
 
     ## make sure those URLs are as expected:
@@ -120,5 +124,28 @@ Choose one:
 
     ```bash
     viyacurlcheck -u "$MY_URLS"
+
+    ```
+
+### From a static file
+
+1. If you are using Viya 3.X, place yourself in the playbook folder and execute this command:
+
+    ```bash
+    ## capture the list of in a file, one per line
+    ansible httpproxy -m shell -a 'grep ProxyPass /etc/httpd/conf.d/proxy.conf  \
+                          | grep -Ev "cas-shared-default-http|jobDefinitions|dagentsrv-shared" \
+                          | awk  "{print \"https://$(hostname -f)\" \$2 }" ' \
+                          | sort -u \
+                          | grep -v CHANGED \
+                          > /tmp/urls.txt
+    ```
+
+1. This creates the list of URLs in a file (`/tmp/urls.txt`).
+1. Edit the file to keep the URLs you are interested in.
+1. And now, run (keep the double quotes!):
+
+    ```bash
+    viyacurlcheck -u "$(cat  /tmp/urls.txt)"
 
     ```
