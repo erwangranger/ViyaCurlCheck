@@ -222,11 +222,6 @@ check_urls () {
             URL=${url%$'\r'}
             URL_HTTP_CODE=$(curl -k -s -o /dev/null -w '%{http_code}' $URL  | tr -d '[:space:]' )
 
-            if [[ "$OUTPUT_TYPE" == "none" ]]; then
-                printf '.'
-                ## newline every tenth test
-                (( $URL_COUNTER % 10 == 0)) && printf '\n'
-            fi
 
             if [[ "$URL_HTTP_CODE" =~ ^(200)$ ]]; then
                 URL_PASS_FAIL="Success"
@@ -244,6 +239,18 @@ check_urls () {
                 fi
                 printf "\n"
             fi
+
+            if [[ "$OUTPUT_TYPE" == "none" ]]; then
+                if [[ $URL_PASS_FAIL == "Success" ]] ; then
+                    printf '\e[92m.\033[0m'
+                else
+                    printf '\e[91m.\033[0m'
+                fi
+
+                ## newline every tenth test
+                (( $URL_COUNTER % 10 == 0)) && printf '\n'
+            fi
+
 
         done
 
