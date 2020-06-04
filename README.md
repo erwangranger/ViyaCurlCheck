@@ -1,20 +1,38 @@
 # `viyacurlcheck`
 
-`viyacurlcheck` is a script that helps assess the status of Viya based on its health endpoint return codes
+`viyacurlcheck` is a script that helps assess the status of Viya based on its health endpoint HTTP return codes
 
-## What it does
+* [What `viyacurlcheck` does](#what-viyacurlcheck-does)
+* [QuickStart](#quickstart)
+  * [Install `viyacurlcheck`](#install-viyacurlcheck)
+    * [Globally (using sudo):](#globally-using-sudo)
+    * [Locally (without sudo):](#locally-without-sudo)
+  * [Usage examples](#usage-examples)
+* [How do I know what URLs to pass?](#how-do-i-know-what-urls-to-pass)
+  * [Viya 3.X](#viya-3x)
+  * [From a static file](#from-a-static-file)
+* [Integrating with third-party tools](#integrating-with-third-party-tools)
+  * [In general](#in-general)
+  * [Jenkins](#jenkins)
+  * [Gitlab-CI](#gitlab-ci)
 
-* Checks all the health endpoints of a Viya Deployment to ensure they are all "healthy"
-* If the number of healthy endpoints is below a specified threshold, the program exits with an error code
+## What `viyacurlcheck` does
+
+* Checks one or more of the health endpoints of a Viya Deployment to ensure they are all responding
+* If the number of healthy endpoints is below a specified threshold, the program either:
+  * exits with an error code
+  * waits and retry until success
 * Optionally outputs CSV statistics
 
 ## QuickStart
 
-### Install
+### Install `viyacurlcheck`
 
 Choose one:
 
-* Globally:
+#### Globally (using sudo):
+
+* If you want to install it on a Linux server to be used easily by all users:
 
     ```bash
     # Ensure you have curl installed
@@ -37,7 +55,9 @@ Choose one:
 
     ```
 
-* Locally (no sudo):
+#### Locally (without sudo):
+
+* If you prefer to install it in a specific location, to be available to a specific user:
 
     ```bash
     ## where it's coming from
@@ -60,26 +80,29 @@ Choose one:
 
     ```
 
-### Execution examples
+### Usage examples
 
 * Display the help for the program:
 
     ```bash
     viyacurlcheck -h
+
     ```
 
-* Check that SASDrive is up,
+* Check that SASDrive and SASLogon are both up,
 
     ```bash
-    viyacurlcheck  -u 'https://${my_viyaserver_dot_com}/SASDrive https://${my_viyaserver_dot_com}/SASLogon'
+    viyacurlcheck  -u "https://${my_viyaserver_dot_com}/SASDrive https://${my_viyaserver_dot_com}/SASLogon"
+
     ```
 
-* Check that SASLogon is up, and if not, try 10 times, 30 seconds apart:
+* Check that SASLogon is up, and if not, try up to 10 times, 30 seconds apart:
 
     ```bash
-    viyacurlcheck  -u 'https://${my_viyaserver_dot_com}/SASLogon' \
+    viyacurlcheck  -u "https://${my_viyaserver_dot_com}/SASLogon" \
         --max-retries 10 \
-        --retry-gap 30 \
+        --retry-gap 30
+
     ```
 
 * Check 10 different URLs until 80% of them are up:
@@ -97,6 +120,17 @@ Choose one:
                         ${h}/SASDecisionManager \
                         ${h}/SASEnvironmentManager " \
                     --min-success-rate 80
+
+    ```
+
+* Check the status for SASLogon, every minute, forever, and output details CSV information:
+
+    ```bash
+    viyacurlcheck  -u "https://${my_viyaserver_dot_com}/SASLogon" \
+        --max-retries 0 \
+        --retry-gap 60 \
+        -o csv
+
     ```
 
 ## How do I know what URLs to pass?
@@ -139,13 +173,34 @@ Choose one:
                           | sort -u \
                           | grep -v CHANGED \
                           > /tmp/urls.txt
+
     ```
 
-1. This creates the list of URLs in a file (`/tmp/urls.txt`).
+1. This creates the list of URLs in a file (`cat /tmp/urls.txt` to display its content).
 1. Edit the file to keep the URLs you are interested in.
 1. And now, run (keep the double quotes!):
 
     ```bash
-    viyacurlcheck -u "$(cat  /tmp/urls.txt)"
+    viyacurlcheck -u "$(cat /tmp/urls.txt)"
 
     ```
+
+## Integrating with third-party tools
+
+### In general
+
+The `viyacurlcheck` script can be leveraged easily from many different third-party tools.
+
+As a simple option, you could for example use `cron` to schedule it on a Linux server, and have it notify you when a relevant event happens.
+
+### Jenkins
+
+If you have a [Jenkins](https://www.jenkins.io/) Server available, this can be a very easy way to quickly make the `viyacurlcheck` script a lot more powerful.
+
+While it's not Jenkins' "raison d'être", it is very good not only at scheduling things, but also very good at notifying you when something important happens!
+
+A sample Jenkinsfile is provided to give you some ideas on how to get started.
+
+### Gitlab-CI
+
+
