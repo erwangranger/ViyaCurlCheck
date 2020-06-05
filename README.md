@@ -14,7 +14,7 @@
 * [Integrating with third-party tools](#integrating-with-third-party-tools)
   * [In general](#in-general)
   * [Jenkins](#jenkins)
-  * [Gitlab-CI](#gitlab-ci)
+  * [Other](#other)
 
 ## What `viyacurlcheck` does
 
@@ -176,7 +176,7 @@ Choose one:
 
     ```
 
-1. This creates the list of URLs in a file (`cat /tmp/urls.txt` to display its content).
+1. This creates the list of URLs in a file ( execute `cat /tmp/urls.txt` to display its content).
 1. Edit the file to keep the URLs you are interested in.
 1. And now, run (keep the double quotes!):
 
@@ -199,8 +199,6 @@ If you have a [Jenkins](https://www.jenkins.io/) Server available, this can be a
 
 While it's not Jenkins' "raison d'être", it is very good not only at scheduling things, but also very good at notifying you when something important happens!
 
-A sample Jenkinsfile is provided to give you some ideas on how to get started.
+### Other
 
-### Gitlab-CI
-
-
+TBD...
